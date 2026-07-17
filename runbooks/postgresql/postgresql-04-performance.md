@@ -1,687 +1,232 @@
-# PostgreSQL Monitoring Runbook
+# PostgreSQL Performance Tuning Runbook
 
 ## Purpose
 
-Continuously monitor the health, availability, and performance of an AWS RDS PostgreSQL database to detect issues early, troubleshoot incidents quickly, and maintain application reliability.
+Optimize PostgreSQL performance by identifying bottlenecks, improving query execution, maintaining indexes, and ensuring efficient resource utilization.
 
 ---
 
 # Objectives
 
-- Detect database failures before users are affected.
-- Identify performance bottlenecks.
-- Monitor resource utilization.
-- Monitor storage growth.
-- Detect connection issues.
-- Investigate slow queries.
-- Configure proactive alerting.
+- Identify slow queries.
+- Improve query performance.
+- Reduce CPU usage.
+- Reduce disk I/O.
+- Improve application response times.
+- Maintain healthy indexes.
 
 ---
 
-# Monitoring Tools
+# Performance Investigation Workflow
 
-| Tool | Purpose |
-|-------|----------|
-| Amazon CloudWatch | Infrastructure metrics and alarms |
-| RDS Performance Insights | Query performance analysis |
-| Enhanced Monitoring | OS-level metrics |
-| PostgreSQL (psql) | Database statistics and diagnostics |
-| CloudTrail | Audit database configuration changes |
-| RDS Events | Database lifecycle events |
+```
+Application Slow
 
----
+↓
 
-# Daily Health Checklist
+CloudWatch Metrics
 
-Perform these checks every day.
+↓
 
-□ RDS instance status = Available
+Performance Insights
 
-□ CPU utilization normal
+↓
 
-□ Freeable memory healthy
+EXPLAIN ANALYZE
 
-□ Database connections normal
+↓
 
-□ Storage usage acceptable
+Identify Bottleneck
 
-□ Read latency normal
+↓
 
-□ Write latency normal
+Optimize
 
-□ Read IOPS normal
+↓
 
-□ Write IOPS normal
-
-□ Automated backup completed successfully
-
-□ No CloudWatch alarms
-
-□ No recent RDS events
-
-□ Performance Insights reviewed
+Verify Improvement
+```
 
 ---
 
-# AWS CloudWatch Metrics
+# Step 1 - Check CloudWatch
 
-## 1. Database Status
+Review
 
-Metric
-
-- RDS Instance Status
-
-Expected
-
-Available
-
-Investigate if
-
-- Stopped
-- Failed
-- Maintenance
-- Storage Full
+- CPU Utilization
+- Read Latency
+- Write Latency
+- Read IOPS
+- Write IOPS
+- Database Connections
+- Freeable Memory
 
 ---
 
-## 2. CPU Utilization
+# Step 2 - Review Performance Insights
 
-Metric
+Open
 
-CPUUtilization
+```
+RDS
+↓
 
-Purpose
+Performance Insights
+```
 
-Measures PostgreSQL CPU usage.
+Check
 
-Healthy
-
-< 60%
-
-Warning
-
-60–80%
-
-Critical
-
-> 80% sustained
-
-Possible causes
-
-- Poor SQL query
-- Missing indexes
-- High traffic
-- Large imports
-- Vacuum operations
-
-Actions
-
-- Check Performance Insights
-- Identify expensive queries
-- Review application traffic
-
----
-
-## 3. Freeable Memory
-
-Metric
-
-FreeableMemory
-
-Purpose
-
-Available memory for PostgreSQL.
-
-Healthy
-
-Memory remains relatively stable.
-
-Investigate if
-
-Memory continuously decreases.
-
-Possible causes
-
-- Too many connections
-- Large sorts
-- Memory-intensive queries
-
-Actions
-
-- Review active sessions
-- Check connection pool
-- Investigate large queries
-
----
-
-## 4. Database Connections
-
-Metric
-
-DatabaseConnections
-
-Purpose
-
-Shows current client connections.
-
-Healthy
-
-Stable.
-
-Investigate if
-
-Sudden spike.
-
-Possible causes
-
-- Connection leak
-- Application restart loop
-- Traffic spike
-
-Actions
-
-- Check application logs
-- Review pg_stat_activity
-- Verify connection pooling
-
----
-
-## 5. Read Latency
-
-Metric
-
-ReadLatency
-
-Purpose
-
-Average read response time.
-
-Healthy
-
-Less than 10 ms
-
-Warning
-
-10–20 ms
-
-Critical
-
-Greater than 20 ms
-
-Possible causes
-
-- Slow disks
-- Heavy queries
-- Large table scans
-
----
-
-## 6. Write Latency
-
-Metric
-
-WriteLatency
-
-Purpose
-
-Average write response time.
-
-Healthy
-
-Less than 10 ms
-
-Investigate if
-
-Latency continues increasing.
-
-Possible causes
-
-- Heavy INSERTs
-- Heavy UPDATEs
-- Storage bottleneck
-
----
-
-## 7. Read IOPS
-
-Metric
-
-ReadIOPS
-
-Purpose
-
-Number of read operations.
-
-Use to identify
-
-- High read workloads
-- Reporting jobs
-- Full table scans
-
----
-
-## 8. Write IOPS
-
-Metric
-
-WriteIOPS
-
-Purpose
-
-Number of write operations.
-
-Investigate spikes caused by
-
-- Batch imports
-- Application deployment
-- Index creation
-
----
-
-## 9. Free Storage Space
-
-Metric
-
-FreeStorageSpace
-
-Purpose
-
-Available disk capacity.
-
-Healthy
-
-Greater than 20%
-
-Critical
-
-Less than 10%
-
-Actions
-
-- Increase storage
-- Archive old data
-- Remove unnecessary logs
-
----
-
-## 10. Network Throughput
-
-Metrics
-
-ReadThroughput
-
-WriteThroughput
-
-Purpose
-
-Measure network traffic between database and clients.
-
----
-
-# RDS Performance Insights
-
-Use Performance Insights to identify expensive SQL statements.
-
-Investigate
-
-- Top SQL
-- Wait Events
 - Database Load
-- Average Active Sessions
-
-Questions
-
-- Which query uses the most CPU?
-- Which query waits longest?
-- Which user generates most load?
-- Which application causes the traffic?
+- Top SQL
+- Top Waits
+- Top Users
+- Top Hosts
 
 ---
 
-# PostgreSQL Health Checks
+# Step 3 - Identify Slow Queries
 
-Connect
-
-```bash
-psql -h <endpoint> -U <user> -d postgres
-```
-
----
-
-## Active Connections
-
-```sql
-SELECT count(*)
-FROM pg_stat_activity;
-```
-
-Purpose
-
-Check total active database sessions.
-
----
-
-## Active Sessions
+Run
 
 ```sql
 SELECT
-    pid,
-    usename,
-    application_name,
-    state,
-    query
-FROM pg_stat_activity;
-```
-
-Purpose
-
-Identify running queries.
-
----
-
-## Long Running Queries
-
-```sql
-SELECT
-    pid,
-    now() - query_start AS duration,
-    query
+pid,
+now()-query_start AS duration,
+query
 FROM pg_stat_activity
 WHERE state='active'
 ORDER BY duration DESC;
 ```
 
-Purpose
-
-Identify queries consuming excessive time.
-
 ---
 
-## Database Size
+# Step 4 - Analyze Query Execution
 
 ```sql
-SELECT pg_size_pretty(
-    pg_database_size(current_database())
-);
+EXPLAIN
+SELECT ...
 ```
 
-Purpose
-
-Monitor storage growth.
-
----
-
-## Largest Tables
+For actual execution time
 
 ```sql
-SELECT
-    relname,
-    pg_size_pretty(pg_total_relation_size(relid))
-FROM pg_catalog.pg_statio_user_tables
-ORDER BY pg_total_relation_size(relid) DESC;
+EXPLAIN ANALYZE
+SELECT ...
 ```
 
-Purpose
+Review
 
-Identify storage-heavy tables.
+- Sequential Scan
+- Index Scan
+- Nested Loop
+- Hash Join
+- Sort
+- Execution Time
 
 ---
 
-## Deadlocks
+# Step 5 - Index Review
 
-```sql
-SELECT deadlocks
-FROM pg_stat_database
-WHERE datname=current_database();
-```
+Check
 
-Purpose
-
-Detect locking problems.
-
----
-
-## Cache Hit Ratio
-
-```sql
-SELECT
-sum(blks_hit) /
-(sum(blks_hit)+sum(blks_read))::float
-AS cache_hit_ratio
-FROM pg_stat_database;
-```
-
-Healthy
-
-Greater than 99%
-
----
-
-# Common Incidents
-
-## High CPU
-
-Symptoms
-
-- Slow API
-- High response times
-
-Possible causes
-
-- Expensive SQL
 - Missing indexes
-- Traffic spike
+- Duplicate indexes
+- Unused indexes
 
-Investigate
-
-- Performance Insights
-- Active queries
-- CPUUtilization
-
-Resolution
-
-- Optimize SQL
-- Add indexes
-- Scale instance
-
----
-
-## Too Many Connections
-
-Symptoms
-
-- New connections rejected
-
-Possible causes
-
-- Connection leak
-- Pool exhaustion
-
-Investigate
+Create index
 
 ```sql
-SELECT count(*)
-FROM pg_stat_activity;
+CREATE INDEX idx_users_email
+ON users(email);
 ```
-
-Resolution
-
-- Restart application
-- Tune connection pool
-- Kill idle sessions
 
 ---
 
-## Low Storage
+# Step 6 - Verify Improvement
+
+Compare
+
+- Execution time
+- CPU
+- Latency
+- Performance Insights
+
+---
+
+# Database Maintenance
+
+Run when appropriate
+
+```sql
+VACUUM;
+```
+
+```sql
+VACUUM ANALYZE;
+```
+
+```sql
+ANALYZE;
+```
+
+Understand
+
+- Autovacuum
+- Statistics
+- Table bloat
+
+---
+
+# Key Metrics
+
+- Query execution time
+- CPU
+- Database Load
+- Read Latency
+- Write Latency
+- Cache Hit Ratio
+- Sequential Scan Count
+- Index Usage
+
+---
+
+# Troubleshooting
 
 Symptoms
 
-- Inserts fail
-- RDS alarms
+- High CPU
+- Slow API
+- High latency
+- Table scans
+- Locking
 
 Investigate
 
 CloudWatch
 
-FreeStorageSpace
-
-Resolution
-
-- Increase storage
-- Remove old data
-- Archive records
-
----
-
-## Slow Queries
-
-Symptoms
-
-- API latency
-
-Investigate
+↓
 
 Performance Insights
 
-Long-running queries
+↓
 
-Resolution
+EXPLAIN ANALYZE
 
-- Add indexes
-- Rewrite SQL
-- Analyze execution plans
+↓
 
----
+Indexes
 
-## High Read Latency
+↓
 
-Investigate
-
-- ReadLatency
-- ReadIOPS
-- Storage utilization
-
-Possible causes
-
-- Large scans
-- Slow storage
-- Missing indexes
+Statistics
 
 ---
 
-## High Write Latency
+# Best Practices
 
-Investigate
-
-- WriteLatency
-- WriteIOPS
-
-Possible causes
-
-- Large imports
-- Heavy UPDATE operations
-- Storage bottleneck
-
----
-
-# CloudWatch Alarm Recommendations
-
-CPUUtilization
-
-Threshold
-
-> 80%
-
-Duration
-
-10 minutes
-
----
-
-FreeableMemory
-
-Threshold
-
-< 500 MB
-
----
-
-DatabaseConnections
-
-Threshold
-
-> 80% of maximum
-
----
-
-FreeStorageSpace
-
-Threshold
-
-< 20%
-
----
-
-ReadLatency
-
-Threshold
-
-> 20 ms
-
----
-
-WriteLatency
-
-Threshold
-
-> 20 ms
-
----
-
-RDS Status
-
-Alert
-
-Anything other than Available
-
----
-
-# Weekly Tasks
-
-- Review CloudWatch graphs.
-- Review Performance Insights.
-- Check storage growth.
-- Review largest tables.
-- Review long-running queries.
-- Review RDS events.
-- Verify CloudWatch alarms.
-- Verify automated backups.
-
----
-
-# Monthly Tasks
-
-- Review instance sizing.
-- Review storage growth trends.
-- Review alarm thresholds.
-- Review database parameter group.
-- Review maintenance schedule.
-- Test backup restore.
-- Review Performance Insights history.
-- Remove unused indexes.
-
----
-
-# Escalation
-
-If any of the following occur:
-
-- Database unavailable
-- Storage full
-- CPU above 90%
-- Memory exhausted
-- Read latency exceeds SLA
-- Write latency exceeds SLA
-- Database corruption suspected
-
-Immediately initiate the PostgreSQL Disaster Recovery Runbook.
+- Index frequently searched columns.
+- Avoid SELECT *.
+- Monitor slow queries.
+- Review execution plans.
+- Keep statistics updated.
+- Allow Autovacuum to run.

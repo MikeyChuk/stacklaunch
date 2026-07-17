@@ -1,0 +1,24 @@
+replicaCount: 3
+
+image:
+  repository: stacklaunch-go-api
+  tag: v1
+  pullPolicy: IfNotPresent
+
+environment:
+  name: production
+  logLevel: warn
+
+database:
+  host: postgres.production.svc.cluster.local
+  name: stacklaunch_production
+  user: stacklaunch_production
+  password: production-lab-password
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

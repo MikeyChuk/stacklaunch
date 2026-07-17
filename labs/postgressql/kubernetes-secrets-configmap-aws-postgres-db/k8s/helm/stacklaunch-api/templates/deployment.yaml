@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stacklaunch-api.fullname" . }}
+  labels:
+    {{- include "stacklaunch-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "stacklaunch-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "stacklaunch-api.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.container.port }}
+              protocol: TCP
+
+          env:
+            - name: APP_ENV
+              value: {{ .Values.environment.name | quote }}
+
+            - name: LOG_LEVEL
+              value: {{ .Values.environment.logLevel | quote }}
+
+            - name: DB_HOST
+              value: {{ .Values.database.host | quote }}
+
+            - name: DB_PORT
+              value: {{ .Values.database.port | quote }}
+
+            - name: DB_NAME
+              value: {{ .Values.database.name | quote }}
+
+            - name: DB_USER
+              value: {{ .Values.database.user | quote }}
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.secretName }}
+                  key: {{ .Values.database.passwordKey }}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
