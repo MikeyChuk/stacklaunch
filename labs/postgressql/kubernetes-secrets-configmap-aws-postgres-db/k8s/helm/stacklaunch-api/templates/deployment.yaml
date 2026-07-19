@@ -43,6 +43,9 @@ spec:
             - name: DB_USER
               value: {{ .Values.database.user | quote }}
 
+            - name: DB_SSLMODE
+              value: {{ .Values.database.sslMode | quote }}
+
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:

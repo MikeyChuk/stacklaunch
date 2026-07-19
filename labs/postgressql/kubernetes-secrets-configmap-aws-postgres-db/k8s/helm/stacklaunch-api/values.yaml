@@ -32,3 +32,11 @@ resources:
   limits:
     cpu: 250m
     memory: 256Mi
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  host: api.local
+  path: /
+  pathType: Prefix

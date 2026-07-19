@@ -22,3 +22,12 @@ resources:
   limits:
     cpu: 300m
     memory: 256Mi
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  host: staging.api.stacklaunch.local
+  path: /
+  pathType: Prefix

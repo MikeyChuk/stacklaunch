@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: stacklaunch-go-api
-  tag: v1
+  tag: v2
   pullPolicy: IfNotPresent
 
 environment:
@@ -10,10 +10,15 @@ environment:
   logLevel: debug
 
 database:
-  host: postgres.dev.svc.cluster.local
-  name: stacklaunch_dev
-  user: stacklaunch_dev
-  password: dev-lab-password
+  host: db-stacklaunch.cxes4uuugay0.eu-west-1.rds.amazonaws.com
+  port: "5432"
+  name: postgres
+  user: stacklaunchadmin
+  sslMode: require
+
+  # Existing Kubernetes Secret
+  secretName: go-api-database-secret
+  passwordKey: database-password
 
 resources:
   requests:
@@ -22,3 +27,12 @@ resources:
   limits:
     cpu: 200m
     memory: 128Mi
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  host: dev.api.stacklaunch.local
+  path: /
+  pathType: Prefix
