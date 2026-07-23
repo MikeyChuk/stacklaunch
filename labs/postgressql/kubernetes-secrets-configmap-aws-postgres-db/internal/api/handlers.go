@@ -118,5 +118,6 @@ func healthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":   "healthy",
 		"database": "connected",
+		"version":  "1.1.0",
 	})
 }

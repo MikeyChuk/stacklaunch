@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: stacklaunch-go-api
-  tag: v2
+  tag: v99909
   pullPolicy: IfNotPresent
 
 environment:
@@ -36,3 +36,24 @@ ingress:
   host: dev.api.stacklaunch.local
   path: /
   pathType: Prefix
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  privileged: false
+  capabilities:
+    drop:
+      - ALL
+
+temporaryStorage:
+  enabled: true
+  mountPath: /tmp
+  sizeLimit: 100Mi

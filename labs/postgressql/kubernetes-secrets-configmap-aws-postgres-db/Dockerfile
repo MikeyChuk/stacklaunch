@@ -13,7 +13,15 @@ FROM alpine:3.22
 
 WORKDIR /app
 
-RUN adduser -D -u 10001 appuser
+RUN addgroup \
+      --gid 10001 \
+      stacklaunch \
+    && adduser \
+      --disabled-password \
+      --no-create-home \
+      --uid 10001 \
+      --ingroup stacklaunch \
+      stacklaunch
 
 COPY --from=builder /app/api /app/api
 
