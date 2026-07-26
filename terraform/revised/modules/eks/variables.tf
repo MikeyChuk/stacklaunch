@@ -43,3 +43,9 @@ variable "enabled_cluster_log_types" {
     "scheduler"
   ]
 }
+
+variable "enable_irsa" {
+  description = "Whether to create an IAM OIDC provider for IRSA"
+  type        = bool
+  default     = true
+}

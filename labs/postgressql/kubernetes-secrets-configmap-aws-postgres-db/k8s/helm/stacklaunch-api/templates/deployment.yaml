@@ -20,6 +20,8 @@ spec:
     spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+# added serviceAccountName to deployment spec to use the service account defined in values-eks.yaml
+      serviceAccountName: {{ .Values.serviceAccount.name }}
 
       containers:
         - name: {{ .Chart.Name }}
