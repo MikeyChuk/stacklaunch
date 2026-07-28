@@ -1,0 +1,33 @@
+replicaCount: 2
+
+image:
+  repository: stacklaunch-go-api
+  tag: v1
+  pullPolicy: IfNotPresent
+
+environment:
+  name: staging
+  logLevel: info
+
+database:
+  host: postgres.staging.svc.cluster.local
+  name: stacklaunch_staging
+  user: stacklaunch_staging
+  password: staging-lab-password
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  host: staging.api.stacklaunch.local
+  path: /
+  pathType: Prefix

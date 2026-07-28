@@ -1,0 +1,12 @@
+configuration:
+  backupStorageLocation:
+    - name: default
+      provider: aws
+      bucket: local
+
+initContainers: []
+
+credentials:
+  useSecret: false
+
+deployNodeAgent: false
