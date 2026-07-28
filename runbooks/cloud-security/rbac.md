@@ -5,15 +5,15 @@
 
 # Table of Contents
 
-1. Purpose
-2. Architecture Overview
-3. Kubernetes RBAC
-4. Service Accounts
-5. IAM Fundamentals
-6. OIDC Explained
-7. IRSA (IAM Roles for Service Accounts)
-8. AWS Secrets Manager
-9. AWS KMS
+1.  Purpose
+2.  Architecture Overview
+3.  Kubernetes RBAC
+4.  Service Accounts
+5.  IAM Fundamentals
+6.  OIDC Explained
+7.  IRSA (IAM Roles for Service Accounts)
+8.  AWS Secrets Manager
+9.  AWS KMS
 10. KMS Key Rotation
 11. Least-Privilege IAM Design
 12. Troubleshooting
@@ -125,21 +125,16 @@ spec:
 
 # 5. IAM Fundamentals
 
-IAM User
+IAM User 
+  - Represents a human.
 
-Represents a human.
+IAM Role 
+  - Represents a temporary identity.
 
-IAM Role
+IAM Policy 
+  - Defines permissions.
 
-Represents a temporary identity.
-
-IAM Policy
-
-Defines permissions.
-
-Trust Policy
-
-Defines who may assume the role.
+Trust Policy - Defines who may assume the role.
 
 Example
 
@@ -154,24 +149,20 @@ Temporary Credentials
 # 6. OIDC
 
 OIDC Issuer
-
-Created automatically by every EKS cluster.
+  - Created automatically by every EKS cluster.
 
 Example
 
 https://oidc.eks.eu-west-1.amazonaws.com/id/XXXXXXXX
 
-IAM OIDC Provider
+IAM OIDC Provider 
+   - AWS object that trusts the EKS OIDC Issuer.
 
-AWS object that trusts the EKS OIDC Issuer.
-
-Purpose
-
-Allows AWS STS to validate Kubernetes tokens.
+Purpose 
+   - Allows AWS STS to validate Kubernetes tokens.
 
 Verification
-
-aws eks describe-cluster
+   - aws eks describe-cluster
 
 aws iam list-open-id-connect-providers
 
@@ -180,8 +171,7 @@ aws iam list-open-id-connect-providers
 # 7. IRSA
 
 Purpose
-
-Allow Pods to access AWS resources without Access Keys.
+  - Allow Pods to access AWS resources without Access Keys.
 
 Flow
 
@@ -198,8 +188,7 @@ IAM Role
 Temporary Credentials
 
 Service Account Annotation
-
-eks.amazonaws.com/role-arn
+  - eks.amazonaws.com/role-arn
 
 Verification
 
@@ -212,8 +201,7 @@ aws sts get-caller-identity
 # 8. AWS Secrets Manager
 
 Purpose
-
-Store application secrets securely.
+  - Store application secrets securely.
 
 Example Secret
 
@@ -224,9 +212,9 @@ Example Secret
 
 Commands
 
-aws secretsmanager create-secret
+  - aws secretsmanager create-secret
 
-aws secretsmanager get-secret-value
+  - aws secretsmanager get-secret-value
 
 Application flow
 
@@ -249,8 +237,7 @@ Prefer Secrets Manager over Kubernetes Secrets for AWS-native applications.
 # 9. AWS KMS
 
 Purpose
-
-Manage encryption keys.
+  - Manage encryption keys.
 
 KMS does NOT store secrets.
 
