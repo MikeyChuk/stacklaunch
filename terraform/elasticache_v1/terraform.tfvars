@@ -1,0 +1,5 @@
+aws_region   = "eu-west-1"
+cluster_name = "stacklaunch-eks"
+project_name = "stacklaunch"
+environment  = "development"
+node_type    = "cache.t4g.micro"

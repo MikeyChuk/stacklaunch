@@ -1,0 +1,64 @@
+replicaCount: 1
+
+image:
+  repository: stacklaunch-go-api
+  tag: v1
+  pullPolicy: IfNotPresent
+
+container:
+  port: 8080
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+environment:
+  name: development
+  logLevel: debug
+
+database:
+  host: postgres
+  port: "5432"
+  name: stacklaunch
+  user: stacklaunch
+  secretName: stacklaunch-api-secret
+  passwordKey: database-password
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  host: api.local
+  path: /
+  pathType: Prefix
+
+
+  podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  privileged: false
+  capabilities:
+    drop:
+      - ALL
+
+temporaryStorage:
+  enabled: true
+  mountPath: /tmp
+  sizeLimit: 100Mi
