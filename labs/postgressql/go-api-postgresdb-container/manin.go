@@ -51,20 +51,44 @@ func main() {
 }
 
 func buildDatabaseURL() string {
-	host := getRequiredEnv("DB_HOST", "postgres")
+
+	host := getRequiredEnv("DB_HOST")
 	port := getEnv("DB_PORT", "5432")
 	user := getRequiredEnv("DB_USER")
 	password := getRequiredEnv("DB_PASSWORD")
-	database := getRequiredEnv("DB_NAME")
+	database := getEnv("DB_NAME", "postgres")
+	sslMode := getEnv("DB_SSLMODE", "require")
 
 	return fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		user,
 		password,
 		host,
 		port,
 		database,
+		sslMode,
 	)
+
+	// host := getEnv("DB_HOST", "localhost")
+	// port := getEnv("DB_PORT", "5432")
+	// user := getEnv("DB_USER", "stacklaunch_admin")
+	// password := getEnv("DB_PASSWORD", "stacklaunch_password")
+	// database := getEnv("DB_NAME", "stacklaunch")
+
+	// host := getRequiredEnv("DB_HOST")
+	// port := getEnv("DB_PORT", "5432")
+	// user := getRequiredEnv("DB_USER")
+	// password := getRequiredEnv("DB_PASSWORD")
+	// database := getRequiredEnv("DB_NAME")
+
+	// return fmt.Sprintf(
+	// 	"postgres://%s:%s@%s:%s/%s?sslmode=disable",
+	// 	user,
+	// 	password,
+	// 	host,
+	// 	port,
+	// 	database,
+	// )
 }
 
 func waitForDatabase(ctx context.Context) error {
